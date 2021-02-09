@@ -23,7 +23,8 @@ python3 inverted_file.py query_keywords
 </p>
 
 <p>
-Results: kwSearchIF is quite faster than kwSearchRaw.
+<h3>Results</h3>
+kwSearchIF is quite faster than kwSearchRaw.
 </p>
 
 <p>
@@ -49,7 +50,8 @@ python3 spatial_index.py query_rectangle_range(x-low, x-high, y-low, y-high)
 </p>
 
 <p>
-Results: spaSearchGrid is quite faster than spaSearchRaw.
+<h3>Results</h3
+spaSearchGrid is quite faster than spaSearchRaw.
 </p>
 
 <p>
@@ -78,6 +80,7 @@ python3 spatial_index.py query_rectangle_range(x-low, x-high, y-low, y-high) que
 </p>
 
 <p>
-Results: kwSpaSearchIf's and kwSpaSearchGrid's run times are quite similar. They are both quite faster than kwSpaSearchRaw.
+<h3>Results</h3>
+kwSpaSearchIf's and kwSpaSearchGrid's run times are quite similar. They are both quite faster than kwSpaSearchRaw.
 </p>
 
