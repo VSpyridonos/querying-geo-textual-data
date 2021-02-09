@@ -50,7 +50,7 @@ python3 spatial_index.py query_rectangle_range(x-low, x-high, y-low, y-high)
 </p>
 
 <p>
-<h3>Results</h3
+<h3>Results</h3>
 spaSearchGrid is quite faster than spaSearchRaw.
 </p>
 
