@@ -3,19 +3,71 @@ import csv
 import time
 
 
-def spaSearchGrid(qrange):
+def kwSpaSearchIF(qrange, keywords):
+
+    start_time = time.time()
+
+    results = []
+    first_time = 1
+
+    # For every query keyword that has been given
+    for kw in keywords:
+
+        # If keyword exists in inverted_file
+        if kw in inverted_file:
+
+            # If it's the first keyword, then results variable will be equal
+            # to all the lines that it appears
+            if first_time == 1:
+                results = inverted_file[kw]
+
+                # Tuple with exactly the same elements as results
+                temp = tuple(results)
+                first_time = 0
+                continue
+
+            # For every element (line number) of the tuple
+            for el in temp:
+
+                # If this line number doesn't exist in
+                # the line numbers of this specifig tag
+                if el not in inverted_file[kw]:
+
+                    # Remove it from the results list
+                    results.pop(results.index(el))
+            temp = tuple(results)
+
+        else:
+            print("kwSpaSearchIF: keyword " + kw + "doesn't exist!")
+
+    # The list with the final results
+    final_results = []
+
+    # For every restaurant that contains all query keywords, checks if it is inside the range query
+    for result in results:
+        if qrange[0] <= locations_list[result][0] and qrange[1] >= locations_list[result][0] and qrange[2] <= locations_list[result][1] and qrange[3] >= locations_list[result][1]:
+            final_results.append(result)
+
+
+    print("\nkwSpaSearchIF: " + str(len(final_results)) + " results, cost = " + str(time.time() - start_time) + " seconds")
+
+    for result in final_results:
+        print(' '.join(data[result]))
+
+    return
+
+
+
+
+def kwSpaSearchGrid(qrange, keywords):
 
     start_time = time.time()
     results = []
-    temp = []
-    end_search = 0
+    final_results = []
 
     # Use coord_array (list) to find which restaurants are inside the query range. These restaurants will be found from the grid
     for i in range(50):
-        if end_search == 1:
-            break
         for j in range(50):
-
 
             # When the x-low of a range is larger than the x-high of the query range, then break because there is no way a restaurant
             # is inside the query range. Also, break out of the outer loop as all ranges from that spot and beyond will have larger x-highs
@@ -23,7 +75,7 @@ def spaSearchGrid(qrange):
                 end_search = 1
                 break
 
-            # When the x-low of a range is larger than the x-high of the query range, then break because there is no way a restaurant
+           # When the x-low of a range is larger than the x-high of the query range, then break because there is no way a restaurant
             # is inside the query range. Saves computation time.
             if float(coord_array[i][j][1][0]) > qrange[3] :
                 break
@@ -58,27 +110,55 @@ def spaSearchGrid(qrange):
                         temp.append(el)
                 results.append(temp)
 
-    # For each list with restaurants that got in results list, find its number of restaurants and adds it to number_of_results
-    number_of_results = 0
-    for list in results:
-        number_of_results += len(list)
 
-    print("\nspaSearchGrid: " + str(number_of_results) + " results, cost = " + str(time.time() - start_time) + " seconds")
-    for result in results:
-        for res in result:
-            print(' '.join(data[res]))
+    found = 0
+
+    # For every list with restaurants that got into results, checks if the restaurants
+    # contain all the query keywords in their tags
+    for list in results:
+        for el in list:
+            # For every query keyword that has been given
+            for kw in keywords:
+                found = 0
+                temp = data[el][2]
+                temp = temp[6:]
+                temp = temp.split(',')
+                # What temp will look like: temp = "['chinese', 'thai']"
+
+                # For each tag in temp variable
+                for tag in temp:
+
+                    # If the keyword equals the tag
+                    if kw == tag:
+                        found = 1
+                        break
+                    else:
+                        continue
+
+                # If no keyword was found, get the next entry of data list
+                if found == 0:
+                    break
+
+            # If all keywords were found in an entry, then put it in results list
+            if found == 1:
+                final_results.append(el)
+
+    print("\nkwSpaSearchGrid: " + str(len(final_results)) + " results, cost = " + str(time.time() - start_time) + " seconds")
+    for result in final_results:
+        print(' '.join(data[result]))
+
 
     return
 
 
 
-def spaSearchRaw(qrange):
+def kwSpaSearchRaw(qrange, keywords):
 
     start_time = time.time()
     results = []
     line_counter = 0
 
-    # For each entry in data list that contains all the file lines
+    # For each entry in data list which contains all the file lines
     for entry in data:
         # In order to take the coordinates of every restaurant
         location = entry[1]
@@ -91,22 +171,51 @@ def spaSearchRaw(qrange):
 
         # Check if every restaurant is inside the range query. If it is, put in results list
         if qrange[0] <= x and qrange[1] >= x and qrange[2] <= y and qrange[3] >= y:
-            results.append(line_counter)
+            for kw in keywords:
+                found = 0
+                temp = entry[2]
+                temp = temp[6:]
+                temp = temp.split(',')
+                # What temp will look like: temp = "['chinese', 'thai']"
 
-        line_counter += 1
+                # For each tag in temp variable
+                for tag in temp:
+
+                    # If the keyword equals the tag
+                    if kw == tag:
+                        found = 1
+                        break
+                    else:
+                        continue
+
+                # If no keyword was found, get the next entry of data list
+                if found == 0:
+                    break
+
+            # If all keywords were found in an entry, then put it in results list
+            if found == 1:
+                results.append(entry)
 
 
-    print("\nspaSearchRaw: " + str(len(results)) + " results, cost = " + str(time.time() - start_time) + " seconds")
+    print("\nkwSpaSearchRaw: " + str(len(results)) + " results, cost = " + str(time.time() - start_time) + " seconds")
     for result in results:
-        print(data[result])
+        print(' '.join(result))
+
 
     return
+
+
 
 with open('Restaurants_London_England.tsv', 'r') as infile:
     tsv_reader = csv.reader(infile, delimiter = '\t')
     data = []
+    tags_list = []
     locations_list = []
     first_time = 1
+
+    # Dictionary which has restaurant tags as keys and lines where tags appear as values
+    inverted_file = {}
+    line_counter = 0
 
     # Read the whole file
     while True:
@@ -116,6 +225,50 @@ with open('Restaurants_London_England.tsv', 'r') as infile:
 
             # Every entry is a file line in data list
             data.append(s)
+
+            '''
+            ###################
+               inverted file
+            ###################
+            '''
+
+            # In order to put each restaurant's/line's tags into inverted file
+            for i in range(2, len(s)):
+                # What tags will look like: tags = "tags: chinese,thai"
+                tags = s[i]
+
+                # What tag will look like: tag = "['tags: chinese', 'thai']"
+                tag = tags.split(',')
+
+                if i == 2:
+                    # What first_tag will look like: first_tag = "chinese"
+                    # Use it only to get the first tag
+                    first_tag = tag[0][6:]
+
+                    # If the first tag doesn't exist in the list with all the tags
+                    if first_tag not in tags_list:
+                        # Then append it to the list
+                        tags_list.append(first_tag)
+                        # Put the new pair in inverted_file
+                        inverted_file[first_tag] = [line_counter]
+                    else:
+                        # Else, just append the new line number in inverted_file in tag's values
+                        inverted_file[first_tag].append(line_counter)
+
+            # In order to put the rest of the tags or tag-line_of_appearance pairs in inverted_file
+            for k in range(1, len(tag)):
+                if tag[k] not in tags_list:
+                    tags_list.append(tag[k])
+                    inverted_file[tag[k]] = [line_counter]
+                else:
+                    inverted_file[tag[k]].append(line_counter)
+
+
+            '''
+            ##################
+                   Grid
+            ##################
+            '''
 
             # In order to take the coordinates of every restaurant
             location = s[1]
@@ -151,8 +304,17 @@ with open('Restaurants_London_England.tsv', 'r') as infile:
                 ymax = y
 
 
+
+            line_counter += 1
+
         except StopIteration:
             break
+
+    '''
+    ###################
+       Grid again
+    ###################
+    '''
 
     # Value range of x and y coordinates
     x_min_max_difference = float(xmax) - float(xmin)
@@ -182,7 +344,6 @@ with open('Restaurants_London_England.tsv', 'r') as infile:
     temp = []
     coord_array = []
     grid = []
-
 
     # Initiate grid creation and create coord_array which has the correct x, y ranges in each index.
     # In every index inside grid, an empty list is put which will be filled later
@@ -218,22 +379,15 @@ with open('Restaurants_London_England.tsv', 'r') as infile:
         line_counter += 1
 
 
-    # Print results
-    print("\nbounds: " + str(xmin) + ' ' + str(xmax) + ' ' + str(ymin) + ' ' + str(ymax))
-    print("widths: " + str(xmax - xmin) + ' ' + str(ymin - ymax))
-
-    for i in range(50):
-        for j in range(50):
-            if grid[i][j]:
-                print(str(i) + ' ' + str(j) + ' ' + str(len(grid[i][j])))
-
-
-    # List that contains range query
     range_queries = []
+    query_keywords = []
     for i in range(1,len(sys.argv)):
-        range_queries.append(float(sys.argv[i]))
+        if i < 5:
+            range_queries.append(float(sys.argv[i]))
+        else:
+            query_keywords.append(sys.argv[i])
 
-
-    # Call functions with range query as a parameter
-    spaSearchGrid(range_queries)
-    spaSearchRaw(range_queries)
+    # Call functions with the range query and the query keywords sequence as parameters
+    kwSpaSearchRaw(range_queries, query_keywords)
+    kwSpaSearchIF(range_queries, query_keywords)
+    kwSpaSearchGrid(range_queries, query_keywords)

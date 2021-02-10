@@ -34,7 +34,6 @@ def kwSearchIF(keywords):
                 # the line numbers of this specifig tag
                 if el not in inverted_file[kw]:
 
-                    # Ton vgazw apo ti lista results
                     # Remove it from the results list
                     results.pop(results.index(el))
             temp = tuple(results)
@@ -58,7 +57,7 @@ def kwSearchRaw(keywords):
     first_time = 1
     found = 0
 
-    # For each entry in data list which contains all the lines of the file
+    # For each entry in data list which contains all the file lines
     for entry in data:
 
         # For each query keyword that has been given
@@ -103,7 +102,7 @@ with open('Restaurants_London_England.tsv', 'r') as infile:
     inverted_file = {}
     line_counter = 0
 
-    # Read the file until the end
+    # Read the whole file
     while True:
         try:
             # Variable s holds the new line that is read
